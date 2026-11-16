@@ -1,0 +1,166 @@
+<div id="viewport"><div id="stage">
+
+<!-- ================= HOME ================= -->
+<section class="page on" id="pHome">
+  <div id="fan"></div>
+  <a class="logo" style="left:1393px;top:76px;width:350px;height:56px"><img data-asset="logo" alt="HYODOER"></a>
+  <button class="hbtn lime" style="left:149px;top:227px" id="btnIntro">앱 소개 페이지</button>
+  <div class="hdesc" style="left:373px;top:352px">부모님께 드릴 편지를 작성하고<br>큐알 스캔 후 이미지를 저장하세요.</div>
+  <button class="hbtn blue" style="left:214px;top:541px" id="btnParent">부모님께 편지 작성하기</button>
+  <div class="hdesc" style="left:438px;top:666px">부모님께 드릴 편지를 작성하고<br>큐알 스캔 후 이미지를 저장하세요.</div>
+  <button class="hbtn navy" style="left:456px;top:818px" id="btnGuest">방명록 남기기</button>
+  <div class="hdesc" style="left:680px;top:943px">류승인을 위해 한마디 남겨주세요 :)<br>작성하신 방명록은 우측에 저장되어 류승인만 봅니다.</div>
+</section>
+
+<!-- ================= WRITE ================= -->
+<section class="page" id="pWrite">
+  <a class="logo home-link" style="left:1489px;top:46px;width:272px;height:44px;cursor:pointer"><img data-asset="logo" alt="HYODOER"></a>
+  <div class="ptitle" style="left:294px;top:85px" id="wTitle"></div>
+  <div class="psub" style="left:294px;top:136px" id="wSub"></div>
+
+  <div class="card" style="left:285px;top:205px;width:609px;height:331px">
+    <div class="clabel" style="left:46px;top:47px">편지봉투 고르기</div>
+  </div>
+  <div id="envOpts"></div>
+  <div class="card" style="left:285px;top:566px;width:609px;height:402px">
+    <div class="clabel" style="left:46px;top:33px">편지지 고르기</div>
+  </div>
+  <div id="paperOpts"></div>
+
+  <div class="card" style="left:926px;top:205px;width:606px;height:767px"></div>
+  <div class="flabel" style="left:962px;top:241px">받는 사람</div>
+  <input class="field" id="fTo" maxlength="12" style="left:952px;top:293px;width:555px;height:68px">
+  <div class="flabel" style="left:962px;top:392px">편지 내용</div>
+  <textarea class="field" id="fBody" maxlength="200" style="left:952px;top:444px;width:555px;height:340px"></textarea>
+  <div class="counter" style="left:1380px;top:743px;width:100px" id="fCount">0/200자</div>
+  <button class="cam" id="camBtn" style="left:981px;top:689px" title="사진 첨부">
+    <svg width="38" height="34" viewBox="0 0 38 34" fill="none"><path d="M23 4H12.5L9.5 8.5H4.5C3.1 8.5 2 9.6 2 11V29.5C2 30.9 3.1 32 4.5 32H29.5C30.9 32 32 30.9 32 29.5V18" stroke="#277BD1" stroke-width="3.6" stroke-linejoin="round"/><circle cx="17" cy="20" r="5.6" stroke="#277BD1" stroke-width="3.6"/><path d="M31 2V13M25.5 7.5H36.5" stroke="#277BD1" stroke-width="3.6" stroke-linecap="round"/></svg>
+    <span>사진 찍어서 첨부</span>
+  </button>
+  <input type="file" id="photoInput" accept="image/*" capture="environment" hidden>
+  <div class="photo-prev" id="photoPrev" style="left:1072px;top:689px"><img alt=""><button id="photoDel">×</button></div>
+  <div class="flabel" style="left:962px;top:815px">보내는 사람</div>
+  <input class="field" id="fFrom" maxlength="12" placeholder="예) 아들" style="left:952px;top:867px;width:555px;height:68px">
+
+  <button class="mainbtn blue" id="toDeco" style="left:631px;top:1006px;width:556px;height:79px">편지 꾸미기</button>
+  <div class="err" id="wErr" style="left:631px;top:975px;width:556px"></div>
+</section>
+
+<!-- ================= DECORATE ================= -->
+<section class="page" id="pDeco">
+  <a class="logo home-link" style="left:1489px;top:46px;width:272px;height:44px;cursor:pointer"><img data-asset="logo" alt="HYODOER"></a>
+  <div class="ptitle" style="left:192px;top:85px">편지 꾸미기</div>
+  <div class="psub u" style="left:192px;top:136px" id="dSub"></div>
+  <div class="card" style="left:118px;top:233px;width:1581px;height:392px">
+    <div class="clabel" style="left:76px;top:58px">내가 고른 편지봉투</div>
+  </div>
+  <div id="decoEnv"></div>
+  <button class="reset" id="resetBtn" style="left:1229px;top:509px" title="스티커 초기화">
+    <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="#8E8E8E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 3v6h6"/></svg>
+    <span>스티커 초기화</span>
+  </button>
+  <div id="tabs"></div>
+  <div class="sheet"></div>
+  <div id="glyphs"></div>
+  <button class="mainbtn navy" id="backWrite" style="left:345px;top:984px;width:555px;height:79px">이전 단계로 돌아가기</button>
+  <button class="mainbtn blue" id="finish" style="left:914px;top:984px;width:556px;height:79px"></button>
+</section>
+
+<!-- ================= QR MODAL ================= -->
+<div class="modal" id="qrModal">
+  <div class="mbox" id="qrBox"></div>
+  <div class="mnote" style="top:722px">이 창을 나가면 QR을 다시 불러올 수 없어요.<br>꼭 저장하세요!</div>
+  <div id="qrCol">
+    <button class="mainbtn lime" id="gbBtn">류승인에게 방명록 쓰기</button>
+    <button class="mainbtn blue" id="homeBtn2">홈으로 돌아가기</button>
+  </div>
+</div>
+
+<!-- ================= PASSWORD (set) ================= -->
+<div class="modal" id="pwModal">
+  <div class="mbox" style="left:621px;top:405px;width:605px;height:257px">
+    <div class="mtitle" style="left:35px;top:32px">편지 암호 설정</div>
+    <input class="field" id="pwInput" type="password" maxlength="20" placeholder="암호를 입력하세요." style="left:24px;top:84px;width:557px;height:68px">
+    <button class="mainbtn blue" id="pwSave" style="left:24px;top:170px;width:557px;height:66px;font-size:23px">암호 저장 후 홈으로 돌아가기</button>
+    <div class="err" id="pwErr" style="left:24px;top:152px;width:557px;font-size:15px"></div>
+  </div>
+  <div class="mnote" style="top:735px">류승인만 볼 수 있게 암호를 설정하십시오.<br>류승인은 마스터 비밀번호를 알고 있으니 자신만의 암호를 만드세요.<br>암호는 복구 못하니까 까먹지 마세요!!!!!!!</div>
+  <button class="xbtn" id="pwClose">×</button>
+</div>
+
+<!-- ================= PASSWORD (open) ================= -->
+<div class="modal" id="unlockModal">
+  <div class="mbox" style="left:621px;top:405px;width:605px;height:257px">
+    <div class="mtitle" style="left:35px;top:32px">편지 암호 입력</div>
+    <input class="field" id="ulInput" type="password" maxlength="20" placeholder="편지를 쓸 때 정한 암호를 입력하세요." style="left:24px;top:84px;width:557px;height:68px">
+    <button class="mainbtn blue" id="ulGo" style="left:24px;top:170px;width:557px;height:66px;font-size:23px">편지 열어보기</button>
+    <div class="err" id="ulErr" style="left:24px;top:152px;width:557px;font-size:15px"></div>
+  </div>
+  <div class="mnote" style="top:700px" id="ulNote"></div>
+  <button class="xbtn" id="ulClose">×</button>
+</div>
+
+<!-- ================= CAMERA ================= -->
+<div class="modal" id="camModal" data-state="live">
+  <div id="camFrame">
+    <video id="camVideo" playsinline muted></video>
+    <img id="camPhoto" alt="">
+    <div id="camCount"></div>
+    <div id="camFlash"></div>
+  </div>
+  <div id="camBar">
+    <button class="mainbtn navy" id="camFile">사진 파일에서 고르기</button>
+    <button id="camShoot" title="찍기"><span></span></button>
+    <button class="mainbtn navy" id="camRetake">다시 찍기</button>
+    <button class="mainbtn lime" id="camUse">이 사진 첨부하기</button>
+  </div>
+  <button class="xbtn" id="camClose">×</button>
+</div>
+
+<!-- ================= ADMIN (Cmd/Ctrl+Shift+B) ================= -->
+<div class="modal" id="adminModal">
+  <div class="mbox" id="adStage" style="left:621px;top:380px;width:605px;height:300px">
+    <div class="mtitle" style="left:35px;top:32px">방명록 관리 <span style="font-weight:500;color:#777;font-size:18px">· 저장된 방명록 <b id="adCount">0</b>개</span></div>
+    <div class="ad-lock">
+      <input class="field" id="adInput" type="password" placeholder="마스터 암호" style="left:24px;top:84px;width:557px;height:68px">
+      <button class="mainbtn blue" id="adGo" style="left:24px;top:170px;width:557px;height:66px;font-size:23px">확인</button>
+      <div class="err" id="adErr" style="left:24px;top:152px;width:557px;font-size:15px"></div>
+    </div>
+    <div class="ad-tools">
+      <button class="mainbtn lime" id="adAll" style="left:24px;top:84px;width:557px;height:66px;font-size:23px">전체 편지 모아 보기</button>
+      <button class="mainbtn blue" id="adExport" style="left:24px;top:164px;width:557px;height:66px;font-size:23px">방명록 백업 파일 받기</button>
+      <div style="position:absolute;left:24px;top:248px;font-size:15px;color:#777">방명록은 Firebase에 저장돼요. 어느 컴퓨터에서든 이 화면으로 볼 수 있어요.</div>
+    </div>
+  </div>
+  <button class="xbtn" id="adClose">×</button>
+</div>
+
+<!-- ================= ALL LETTERS (admin) ================= -->
+<div class="modal" id="allModal">
+  <div class="all-head">전체 방명록 <b id="allCount">0</b>개</div>
+  <div id="allGrid"></div>
+  <button class="xbtn" id="allClose">×</button>
+</div>
+
+<!-- ================= READ ================= -->
+<div class="modal" id="readModal">
+  <div class="inner"><div class="paper" id="readPaper"></div><img id="readPhoto" alt=""></div>
+  <button class="delbtn" id="readDel">이 방명록 삭제</button>
+  <button class="xbtn" id="readClose">×</button>
+</div>
+
+</div></div>
+
+<div id="dragGhost"><img alt=""></div>
+<div id="toast"></div>
+
+<!-- ================= MOBILE LETTER VIEW (QR) ================= -->
+<div id="mobile"><div class="wrap">
+  <img class="mlogo" data-asset="logo" alt="HYODOER">
+  <h1 id="mTitle"></h1>
+  <p class="sub" id="mSub"></p>
+  <div class="menv" id="mEnv"></div>
+  <button class="open" id="mOpen">편지 열어보기</button>
+  <div class="paper" id="mPaper"></div>
+  <p class="tip" id="mTip"></p>
+</div></div>
