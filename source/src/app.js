@@ -82,7 +82,8 @@ function bytesU16(a){ let s = ''; for (let i = 0; i + 1 < a.length; i += 2) s +=
 async function pipe(bytes, stream){ const r = new Response(new Blob([bytes]).stream().pipeThrough(stream)); return new Uint8Array(await r.arrayBuffer()); }
 async function encodeLetter(L){
   const st = []; (L.stickers || []).forEach(s => st.push(s.g, s.c, Math.round(s.x * 99), Math.round(s.y * 99), ((Math.round(s.r || 0) % 360) + 360) % 360, Math.round((s.s || 1) * 20)));
-  const arr = [2, L.env, L.paper, L.to, L.body, L.from, L.date.replace(/\./g,'').slice(2), st];
+  const arr = [L.photoRef ? 3 : 2, L.env, L.paper, L.to, L.body, L.from, L.date.replace(/\./g,'').slice(2), st];
+  if (L.photoRef) arr.push(L.photoRef);
   const z = await pipe(u16bytes(JSON.stringify(arr)), new CompressionStream('deflate-raw'));
   return 'L' + b32enc(z);
 }
@@ -92,7 +93,7 @@ async function decodeLetter(code){
   const d = String(a[6]);
   const n = a[0] >= 2 ? 6 : 4, st = [];
   for (let i = 0; i + n - 1 < a[7].length; i += n) st.push({ g: a[7][i], c: a[7][i+1], x: a[7][i+2] / 99, y: a[7][i+3] / 99, r: n === 6 ? a[7][i+4] : 0, s: n === 6 ? a[7][i+5] / 20 : 1 });
-  return { env: a[1], paper: a[2], to: a[3], body: a[4], from: a[5], date: '20' + d.slice(0,2) + '.' + d.slice(2,4) + '.' + d.slice(4,6), stickers: st };
+  return { env: a[1], paper: a[2], to: a[3], body: a[4], from: a[5], date: '20' + d.slice(0,2) + '.' + d.slice(2,4) + '.' + d.slice(4,6), stickers: st, photoRef: a[0] >= 3 ? a[8] : null };
 }
 
 /* ---------- crypto: letter body/photo are encrypted; only the envelope is public ---------- */
@@ -205,6 +206,25 @@ const Store = {
   }
 };
 Store.all = [];
+
+/* parent-letter photos: encrypted with a random key that only travels inside the QR */
+async function uploadLetterPhoto(dataURL){
+  const raw = crypto.getRandomValues(new Uint8Array(16)), iv = crypto.getRandomValues(new Uint8Array(12));
+  const k = await subtle.importKey('raw', raw, 'AES-GCM', false, ['encrypt']);
+  const ct = await subtle.encrypt({ name: 'AES-GCM', iv }, k, te.encode(dataURL));
+  const id = 'p' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+  const body = { fields: { enc: { stringValue: JSON.stringify({ iv: b64e(iv), ct: b64e(ct) }) }, createdAt: { integerValue: String(Date.now()) } } };
+  const r = await fetch(`${FS}/photos?documentId=${id}&key=${FB.apiKey}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  if (!r.ok) throw new Error('photo ' + r.status);
+  return [id, b64e(raw)];
+}
+async function fetchLetterPhoto(ref){
+  const r = await fetch(`${FS}/photos/${ref[0]}?key=${FB.apiKey}`);
+  if (!r.ok) throw new Error('photo ' + r.status);
+  const e = JSON.parse((await r.json()).fields.enc.stringValue);
+  const k = await subtle.importKey('raw', b64d(ref[1]), 'AES-GCM', false, ['decrypt']);
+  return td.decode(await subtle.decrypt({ name: 'AES-GCM', iv: b64d(e.iv) }, k, b64d(e.ct)));
+}
 
 /* ---------- stage scaling & routing ---------- */
 const stage = $('#stage');
@@ -367,8 +387,7 @@ function startWrite(m){
   fTo.placeholder = '예) 엄마, 아빠, 부모님';
   fBody.value = ''; fBody.placeholder = m === 'p' ? '부모님께 전하고 싶은 마음을 자유롭게 적어보세요.' : OWNER + '을 위한 글을 자유롭게 적어보세요.';
   fFrom.value = '';
-  // 사진은 방명록에만 저장돼요 (QR 편지에는 사진을 담을 수 없어요)
-  $('#camBtn').style.display = m === 'r' ? '' : 'none';
+  $('#camBtn').style.display = '';
   setPhoto(null);
   updateCount(); syncOpts(); $('#wErr').classList.remove('show');
   show('pWrite');
@@ -425,7 +444,7 @@ $('#photoInput').addEventListener('change', async e => {
 });
 $('#photoDel').addEventListener('click', e => { e.stopPropagation(); setPhoto(null); });
 function setPhoto(uri){
-  L && (L.photo = uri);
+  if (L){ L.photo = uri; L.photoRef = null; }
   const p = $('#photoPrev'); p.style.display = uri ? 'block' : 'none'; if (uri) p.querySelector('img').src = uri;
   $('#camBtn').classList.toggle('has', !!uri);
 }
@@ -605,6 +624,11 @@ $('#finish').addEventListener('click', async () => {
 async function showQR(){
   const btn = $('#finish'); btn.disabled = true;
   try {
+    if (L.photo && !L.photoRef){
+      btn.textContent = '사진 올리는 중…';
+      try { L.photoRef = await uploadLetterPhoto(L.photo); }
+      catch(e){ console.error(e); toast('사진을 올리지 못해서 사진 없이 QR을 만들었어요. (인터넷 연결 확인)'); }
+    }
     const code = await encodeLetter(L);
     let base = PUBLIC_URL || (location.href.split('#')[0]);
     const q = qrcode(0, 'L');
@@ -616,7 +640,7 @@ async function showQR(){
     modal('qrModal');
   } catch(e){
     console.error(e); toast('QR을 만들지 못했어요. 편지 내용을 조금 줄여 주세요.');
-  } finally { btn.disabled = false; }
+  } finally { btn.disabled = false; btn.textContent = mode === 'p' ? '편지 완성하고 큐알 받기' : '편지 완성하고 홈에 띄우기'; }
 }
 $('#gbBtn').addEventListener('click', () => startWrite('r'));
 // '홈으로 돌아가기'를 누를 때마다 방명록 버튼이 한 단계씩 커지고, 최대 크기에서 한 번 더 누르면 홈으로
@@ -762,6 +786,11 @@ async function route(){
         env.style.transform = 'translateY(-20px) scale(.9)'; env.style.opacity = '.0';
         setTimeout(() => { env.style.display = 'none'; $('#mOpen').style.display = 'none';
           const p = $('#mPaper'); p.style.display = 'block'; paperEl(p, letter);
+          if (letter.photoRef){
+            const ph = $('#mPhoto'); ph.style.display = 'block'; ph.classList.add('loading');
+            fetchLetterPhoto(letter.photoRef).then(src => { ph.src = src; ph.classList.remove('loading'); })
+              .catch(() => { ph.style.display = 'none'; $('#mTip').insertAdjacentHTML('afterbegin', '사진을 불러오지 못했어요. 잠시 후 다시 열어 주세요.<br><br>'); });
+          }
           $('#mTip').innerHTML = '편지를 길게 눌러 캡처하거나<br>이 페이지를 즐겨찾기에 저장해 두세요 :)'; }, 450);
       };
       env.onclick = open; $('#mOpen').onclick = open;

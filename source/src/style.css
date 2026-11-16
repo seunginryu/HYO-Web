@@ -182,3 +182,6 @@ textarea.field{padding:20px;resize:none;line-height:1.55}
 .all-empty{color:#fff;font-size:24px;grid-column:1/-1;text-align:center;padding-top:200px}
 #allModal{background:rgba(12,22,38,.96)}
 #allGrid{align-items:start}
+
+#mPhoto{display:none;width:100%;margin-top:20px;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.15);animation:rise .7s ease both;background:#e9eef3;min-height:120px}
+#mPhoto.loading{min-height:240px}
