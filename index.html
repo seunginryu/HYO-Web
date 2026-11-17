@@ -24,7 +24,7 @@ input,textarea{font-family:inherit}
 .hbtn.blue{background:#277BD1;color:#fff}
 .hbtn.navy{background:#1E3A5E;color:#fff}
 .hdesc{position:absolute;text-align:center;color:#4D4D4D;font-size:20px;font-weight:600;line-height:26px;letter-spacing:-.3px;white-space:nowrap;transform:translateX(-50%)}
-#fan{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:0}
+#fan{position:absolute;inset:0;overflow:visible;pointer-events:none;z-index:0}
 .fenv{position:absolute;left:0;top:0;width:334px;height:194px;transform-origin:0 0;pointer-events:auto;filter:drop-shadow(0 0 7px rgba(0,0,0,.12));will-change:transform}
 .fenv{cursor:grab;touch-action:none}
 #fan.dragging .fenv{cursor:grabbing}
@@ -2915,12 +2915,22 @@ function newLetter(m){
 const SLOTS = [ // [x, y, deg] from the design, top → bottom
   [780.8,-136.1,-0.37],[783,67.25,-8.48],[815.45,275.1,-22.34],[888.8,465.9,-32.96],[1001,640.3,-42.65],
   [1134.9,789.7,-52.16],[1295.9,917.3,-63.72],[1482.7,1005.2,-72.23],[1677,1065.25,-80.33]];
-// extend one slot beyond each end so envelopes slide in and out of view
-(function(){ const a = SLOTS[0], b = SLOTS[1], y = SLOTS[8], z = SLOTS[7];
-  SLOTS.unshift([a[0]*2-b[0], a[1]*2-b[1], a[2]*2-b[2]]); SLOTS.push([y[0]*2-z[0], y[1]*2-z[1], y[2]*2-z[2]]); })();
-const SAMPLE_COLORS = [0,1,0,2,1,0,1,0,2];
+// continue the curve a few slots beyond each end (quadratic extrapolation), so on wide or tall
+// screens envelopes slide in and out past the screen edge instead of popping up inside it
+const EXT = 4;
+(function(){
+  const ext = (p0, p1, p2) => { // next slot after p2 following the same curvature
+    const d = [0,1,2].map(k => p2[k] - p1[k]), dd = [0,1,2].map(k => (p2[k] - p1[k]) - (p1[k] - p0[k]));
+    return [0,1,2].map(k => p2[k] + d[k] + dd[k]);
+  };
+  for (let i = 0; i < EXT; i++){
+    const n = SLOTS.length; SLOTS.push(ext(SLOTS[n-3], SLOTS[n-2], SLOTS[n-1]));
+    SLOTS.unshift(ext(SLOTS[2], SLOTS[1], SLOTS[0]));
+  }
+})();
+const SAMPLE_COLORS = [0,1,0,2,1,0,1,0,2,1,2,0];
 const fan = $('#fan');
-let fanEls = [], fanPhase = 0, fanItems = [];
+let fanEls = [], fanPhase = EXT, fanItems = [];
 function slotAt(p){
   const n = SLOTS.length - 1; p = Math.max(0, Math.min(n, p));
   const i = Math.min(n - 1, Math.floor(p)), t = p - i, a = SLOTS[i], b = SLOTS[i+1];
@@ -2930,11 +2940,11 @@ function buildFan(list){
   fan.innerHTML = ''; fanEls = [];
   const COUNT = SLOTS.length; // 11 positions incl. off-screen ends
   fanItems = [];
-  if (list.length === 0){ for (let i = 0; i < COUNT; i++) fanItems.push({ sample: true, env: SAMPLE_COLORS[i % 9] }); }
+  if (list.length === 0){ for (let i = 0; i < COUNT; i++) fanItems.push({ sample: true, env: SAMPLE_COLORS[i % SAMPLE_COLORS.length] }); }
   else {
     list.forEach(x => fanItems.push(x));
     // few entries → fill the rest of the fan with blank envelopes, spread between the real ones
-    for (let i = fanItems.length; i < COUNT; i++) fanItems.push({ sample: true, env: SAMPLE_COLORS[i % 9] });
+    for (let i = fanItems.length; i < COUNT; i++) fanItems.push({ sample: true, env: SAMPLE_COLORS[i % SAMPLE_COLORS.length] });
     if (list.length < COUNT){
       const reals = fanItems.filter(x => !x.sample), blanks = fanItems.filter(x => x.sample), step = COUNT / reals.length, out = [];
       for (let i = 0; i < COUNT; i++){ const r = Math.floor(i / step); out.push(i === Math.round(r * step) && reals[r] ? reals[r] : (blanks.pop() || reals[0])); }
@@ -3326,7 +3336,7 @@ async function savePw(){
     };
     entry.enc = await sealSecret({ to: L.to, body: L.body, paper: L.paper, photo: L.photo || null }, pw);
     await Store.add(entry);
-    fanPhase = 0;
+    fanPhase = EXT;
     goHome();
     toast('방명록이 홈에 걸렸어요!');
   } catch(e){ console.error(e); err.textContent = '저장하지 못했어요. 다시 눌러 주세요.'; err.classList.add('show'); }

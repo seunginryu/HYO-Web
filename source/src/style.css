@@ -20,7 +20,7 @@ input,textarea{font-family:inherit}
 .hbtn.blue{background:#277BD1;color:#fff}
 .hbtn.navy{background:#1E3A5E;color:#fff}
 .hdesc{position:absolute;text-align:center;color:#4D4D4D;font-size:20px;font-weight:600;line-height:26px;letter-spacing:-.3px;white-space:nowrap;transform:translateX(-50%)}
-#fan{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:0}
+#fan{position:absolute;inset:0;overflow:visible;pointer-events:none;z-index:0}
 .fenv{position:absolute;left:0;top:0;width:334px;height:194px;transform-origin:0 0;pointer-events:auto;filter:drop-shadow(0 0 7px rgba(0,0,0,.12));will-change:transform}
 .fenv{cursor:grab;touch-action:none}
 #fan.dragging .fenv{cursor:grabbing}
