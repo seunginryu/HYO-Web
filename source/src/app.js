@@ -303,7 +303,7 @@ function phoneEl(p){
   const W = p.big ? 310 : 280, H = p.big ? 672 : 607;
   const setImg = n => {
     scr.innerHTML = '';
-    const im = el('img'); im.src = isrc(n); im.alt = ''; im.loading = 'lazy';
+    const im = el('img'); im.src = isrc(n); im.alt = '';
     const h = ISIZE[n][1] * W / ISIZE[n][0];
     if (h > H + 20 && !p.seq){ im.classList.add('tall'); im.style.setProperty('--dy', (H - h) + 'px'); im.style.setProperty('--dur', Math.max(10, (h - H) / 40) + 's'); }
     scr.appendChild(im); w.dataset.img = n;
@@ -338,7 +338,7 @@ function ibShow(i){
   const ph = el('div', 'ib-phones'); s.phones.forEach(p => ph.appendChild(phoneEl(p)));
   if (s.photos){
     const g = el('div', 'ib-photos');
-    s.photos.forEach(([n, l]) => { const d = el('div', 'ib-photo', `<img src="${isrc(n)}" alt="${l}" loading="lazy"><span>${l}</span>`); d.onclick = () => ibZoom(n, true); g.appendChild(d); });
+    s.photos.forEach(([n, l]) => { const d = el('div', 'ib-photo', `<img src="${isrc(n)}" alt="${l}"><span>${l}</span>`); d.onclick = () => ibZoom(n, true); g.appendChild(d); });
     ph.appendChild(g);
   }
   sec.appendChild(ph);
@@ -350,7 +350,11 @@ function ibZoom(n, photo){
 }
 $('#ibZoomClose').addEventListener('click', () => modal('ibZoom', false));
 $('#ibZoom').addEventListener('click', e => { if (e.target.id === 'ibZoom') modal('ibZoom', false); });
-function openIntro(){ show('pIntro'); document.body.classList.add('intro'); ibShow(0); }
+let ibPreloaded = false;
+function openIntro(){
+  if (!ibPreloaded){ ibPreloaded = true; Object.keys(ISIZE).forEach(n => { const i = new Image(); i.src = isrc(n); }); }
+  show('pIntro'); document.body.classList.add('intro'); ibShow(0);
+}
 addEventListener('keydown', e => {
   if (!$('#pIntro').classList.contains('on') || $('#ibZoom').classList.contains('on')) return;
   if (e.key === 'ArrowRight') ibShow((ibIdx + 1) % INTRO.length);
