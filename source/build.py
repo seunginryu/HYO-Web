@@ -21,6 +21,7 @@ assets = {
     'paper': [svg(f'assets/paper_{c}.svg') for c in ('blue', 'lime', 'navy')],
     'glyph': glyph, 'glyphBox': box,
     'star': open('raw/star_d.txt').read(),
+    'hyoLogo': svg('assets/hyo_logotype.svg'), 'hyoSymbol': svg('assets/hyo_symbol.svg'),
     'bg': 'data:image/webp;base64,' + __import__('base64').b64encode(open('assets/background.webp','rb').read()).decode(),
 }
 # Paperlogy Bold (buttons) — subset to the characters this page uses
@@ -38,7 +39,7 @@ FIREBASE = {'apiKey': 'AIzaSyD5OueRgWnshfaMldf5NoSHNqmjg15a1-Y', 'authDomain': '
 mh = hashlib.sha256(('hyodoer:' + MASTER).encode()).hexdigest()
 VIEWER = os.environ.get('HYO_VIEWER') == '1'
 if VIEWER: mh = ''
-app = open('src/app.js').read().replace('__MASTER_KEYS__', open('keys/master.json').read().strip()).replace('__FIREBASE__', json.dumps(FIREBASE)).replace('__PUBLIC_URL__', PUBLIC_URL).replace("'__VIEWER__'", "'1'" if VIEWER else "'0'")
+app = open('src/app.js').read().replace('__MASTER_KEYS__', open('keys/master.json').read().strip()).replace('__FIREBASE__', json.dumps(FIREBASE)).replace('__INTRO_SIZES__', open('assets/intro_sizes.json').read()).replace('__PUBLIC_URL__', PUBLIC_URL).replace("'__VIEWER__'", "'1'" if VIEWER else "'0'")
 qr = open('raw/qrcode.js').read()
 html = f'''<!DOCTYPE html>
 <html lang="ko"><head><meta charset="utf-8">

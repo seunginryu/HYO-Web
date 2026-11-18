@@ -239,6 +239,8 @@ function fit(){
 }
 addEventListener('resize', fit); fit();
 function show(id){
+  document.body.classList.toggle('intro', id === 'pIntro');
+  if (id !== 'pIntro' && typeof ibTimers !== 'undefined'){ ibTimers.forEach(clearInterval); ibTimers = []; }
   document.querySelectorAll('.page').forEach(p => p.classList.toggle('on', p.id === id));
   document.querySelectorAll('.modal').forEach(m => m.classList.remove('on'));
 }
@@ -251,6 +253,109 @@ function newLetter(m){
   mode = m;
   L = { env: null, paper: null, to: m === 'r' ? OWNER : '', body: '', from: '', date: today(), stickers: [], photo: null };
 }
+
+
+/* ================= APP INTRO (앱 소개 페이지) ================= */
+const INTRO = [
+  { tab: '홈 화면', title: '[메인 홈 화면]', sub: '효도를 기록하고, 다음 효도를 떠올리게 하는 홈',
+    points: [
+      ['효도 통계 카드', "사용자의 기록을 반영해 효도 횟수와 효도한 기간을\n보여줌으로써 뿌듯함과 '아 효도 해야지' 재이용 유도"],
+      ['효도어 스페이스', '부모님께 공유할 만한 정보를 모아두어\n부모님과의 연락을 유도'],
+      ['주문 진행 상황 알림 카드', '영상에서 사용한 캐릭터를 이용, 모션을 제작해\n주문자의 주문(효도)의 현재 상황을 알림'] ],
+    phones: [ { imgs: ['home_first'], cap: '최초 홈' }, { imgs: ['home_before'], cap: '이용 전', big: true }, { imgs: ['home_after'], cap: '이용 후 · 진행 상황 카드' } ] },
+  { tab: '신청 플로우', title: '[신청 플로우]', sub: '부모님의 응답이 와야 넘어가는, 연락이 생기는 신청 과정',
+    points: [
+      ['사용자의 행동 제한', '부모님의 응답 도착 전까지 다음 단계로의\n이동을 제한하여 부모님과의 연락을 유도'],
+      ['효도의 개인화', '편지지를 선택할 수 있게 함으로써\n나만의 효도 경험 제공'],
+      ['제한 경험을 효도의 계기로', '응답을 기다리는 동안 부모님에게 편지를 쓸\n기회를 마련하여 또 다른 효도의 계기 마련.\n추후 패키지와 연계하여 부모님께 전달.'] ],
+    phones: [ { imgs: ['c3'], cap: '응답 대기 · 다음 단계 잠김' },
+      { big: true, seq: [ ['c1','01 부모님 정보 입력'], ['c2_1','02 부모님께 설문 문자 발송'], ['c2','02 부모님과 연락하기'], ['c3','03 응답 대기 중'], ['c3_1','03 기다리는 동안 편지지 고르기'], ['c3_2','03 편지 쓰기'], ['c3_5','03 부모님 응답 도착!'], ['c4','04 최종 확인'], ['c4_1','04 결제'], ['c4_2','신청 완료'] ], hl: [0,0,0,1,2,3,1,0,0,0] },
+      { imgs: ['c3_1'], cap: '편지지 고르기' } ] },
+  { tab: '주문현황 · 사진 확인', title: '[세탁 현황 사진 보기]', sub: '맡긴 이불이 어디쯤인지, 사진으로 안심하는 주문 내역',
+    points: [
+      ['단계 확인 다이얼', "세탁기와 '회전'의 컨셉에 맞추어 세탁기의\n다이얼에서 착안해 진행 단계를 알 수 있는 카드 디자인"],
+      ['진행 사진', '내가 맡긴 부모님의 세탁물의 세탁 과정을\n실제 사진으로 확인, 신뢰감 구축.\n디폴트 축소형, 터치 시 확대'],
+      ['상태별 주문 내역', '신청 중 · 접수된 · 완료된 주문을 탭으로 나눠\n진행 상황을 한눈에 확인'] ],
+    phones: [ { imgs: ['d1_2'], cap: '접수된 주문' }, { imgs: ['d2'], cap: '주문 상세 · 단계 다이얼', big: true } ],
+    photos: [ ['ph_pickup','수거'], ['ph_wash','세탁 중'], ['ph_pack','포장'], ['ph_ship','배송 중'] ] },
+  { tab: '편지 보관함', title: '[편지 보관함]', sub: '신청할 때 쓴 편지와 부모님께 받은 편지를 모아 두는 곳',
+    points: [
+      ['편지 선택과 펼치는 인터랙션', '신청 단계에서 작성한 편지와, 부모님께 받은 편지를\n온라인에서도 읽을 수 있도록 보관.\n실제 편지가 열리는 모션으로 인터랙션'],
+      ['내가 쓴 편지와 받은 편지', '카테고리 분류로 수월하게 편지 확인'] ],
+    phones: [ { imgs: ['g1'], cap: '부채꼴로 도는 편지들' },
+      { big: true, seq: [ ['g1','편지를 골라요'], ['g1_1','두 번 탭하면'], ['g1_2','봉투가 열리고'], ['g1_3','편지가 나와요'], ['g1_4','편지 읽기'] ], fast: true },
+      { seq: [ ['g2','내가 쓴 편지'], ['g3','엄마한테 받은 편지'], ['g4','아빠한테 받은 편지'] ] } ] }
+];
+const ISIZE = __INTRO_SIZES__;
+const isrc = n => 'intro/' + n + '.webp';
+let ibIdx = 0, ibTimers = [];
+(function(){
+  const logo = A.hyoLogo.replace(/#277BD1/g, '#fff');
+  $('#ibLogo').innerHTML = logo;
+  document.documentElement.style.setProperty('--hyo-symbol', `url("${svgURI(A.hyoSymbol.replace(/#277BD1/g,'#fff'))}")`);
+  document.documentElement.style.setProperty('--hyo-symbol-lime', `url("${svgURI(A.hyoSymbol.replace(/#277BD1/g,'#DAE633'))}")`);
+  const tabs = $('#ibTabs');
+  INTRO.forEach((s, i) => { const b = el('button', 'ib-tab', '<b>0' + (i+1) + '</b>' + s.tab); b.onclick = () => ibShow(i); tabs.appendChild(b); });
+})();
+function phoneEl(p){
+  const w = el('div', 'phone' + (p.big ? ' big' : ''));
+  const fr = el('div', 'frame'), scr = el('div', 'scr'); fr.appendChild(scr); w.appendChild(fr);
+  const W = p.big ? 310 : 280, H = p.big ? 672 : 607;
+  const setImg = n => {
+    scr.innerHTML = '';
+    const im = el('img'); im.src = isrc(n); im.alt = ''; im.loading = 'lazy';
+    const h = ISIZE[n][1] * W / ISIZE[n][0];
+    if (h > H + 20 && !p.seq){ im.classList.add('tall'); im.style.setProperty('--dy', (H - h) + 'px'); im.style.setProperty('--dur', Math.max(10, (h - H) / 40) + 's'); }
+    scr.appendChild(im); w.dataset.img = n;
+  };
+  if (p.seq){
+    const cap = el('div', 'stepcap'); w.appendChild(cap);
+    const dots = el('div', 'steps'); p.seq.forEach(() => dots.appendChild(el('span'))); w.appendChild(dots);
+    const imgs = p.seq.map(([n]) => { const im = el('img'); im.src = isrc(n); im.alt = ''; im.style.opacity = 0; scr.appendChild(im); return im; });
+    let k = 0;
+    const go = () => {
+      imgs.forEach((im, j) => im.style.opacity = j === k ? 1 : 0);
+      [...dots.children].forEach((d, j) => d.classList.toggle('on', j === k));
+      cap.textContent = p.seq[k][1]; w.dataset.img = p.seq[k][0];
+      if (p.hl) document.querySelectorAll('#ibBody .ib-pt').forEach((pt, j) => pt.classList.toggle('on', p.hl[k] === j + 1));
+      k = (k + 1) % p.seq.length;
+    };
+    go(); ibTimers.push(setInterval(go, p.fast ? 1600 : 2400));
+  } else setImg(p.imgs[0]);
+  w.appendChild(el('div', 'cap', escapeHTML(p.cap || '')));
+  w.addEventListener('click', () => ibZoom(w.dataset.img));
+  return w;
+}
+function ibShow(i){
+  ibIdx = i; ibTimers.forEach(clearInterval); ibTimers = [];
+  [...$('#ibTabs').children].forEach((t, j) => t.classList.toggle('on', j === i));
+  const s = INTRO[i], sec = el('div', 'ib-sec');
+  const tx = el('div', 'ib-text');
+  tx.innerHTML = `<div class="ib-sec-title">${s.title}</div><div class="ib-sec-sub">${s.sub}</div>`;
+  const pts = el('div', 'ib-points');
+  s.points.forEach(([h, p]) => pts.appendChild(el('div', 'ib-pt', `<i></i><h3>${h}</h3><p>${p}</p>`)));
+  tx.appendChild(pts); sec.appendChild(tx);
+  const ph = el('div', 'ib-phones'); s.phones.forEach(p => ph.appendChild(phoneEl(p)));
+  if (s.photos){
+    const g = el('div', 'ib-photos');
+    s.photos.forEach(([n, l]) => { const d = el('div', 'ib-photo', `<img src="${isrc(n)}" alt="${l}" loading="lazy"><span>${l}</span>`); d.onclick = () => ibZoom(n, true); g.appendChild(d); });
+    ph.appendChild(g);
+  }
+  sec.appendChild(ph);
+  const body = $('#ibBody'); body.innerHTML = ''; body.appendChild(sec);
+}
+function ibZoom(n, photo){
+  const w = document.querySelector('.ibz-wrap'); w.classList.toggle('photo', !!photo); w.scrollTop = 0;
+  $('#ibZoomImg').src = isrc(n); modal('ibZoom');
+}
+$('#ibZoomClose').addEventListener('click', () => modal('ibZoom', false));
+$('#ibZoom').addEventListener('click', e => { if (e.target.id === 'ibZoom') modal('ibZoom', false); });
+function openIntro(){ show('pIntro'); document.body.classList.add('intro'); ibShow(0); }
+addEventListener('keydown', e => {
+  if (!$('#pIntro').classList.contains('on') || $('#ibZoom').classList.contains('on')) return;
+  if (e.key === 'ArrowRight') ibShow((ibIdx + 1) % INTRO.length);
+  if (e.key === 'ArrowLeft') ibShow((ibIdx + INTRO.length - 1) % INTRO.length);
+});
 
 /* ================= HOME: envelope fan ================= */
 const SLOTS = [ // [x, y, deg] from the design, top → bottom
@@ -361,7 +466,7 @@ function tick(t){
 requestAnimationFrame(tick);
 Store.onChange(list => buildFan(list));
 
-$('#btnIntro').addEventListener('click', () => toast('앱 소개 페이지는 준비 중이에요.'));
+$('#btnIntro').addEventListener('click', openIntro);
 $('#btnParent').addEventListener('click', () => startWrite('p'));
 $('#btnGuest').addEventListener('click', () => startWrite('r'));
 function goHome(){ show('pHome'); }
