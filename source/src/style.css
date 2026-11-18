@@ -244,3 +244,8 @@ body.intro #stage{background:none}
 .ibz-wrap{position:absolute;left:50%;top:40px;bottom:40px;transform:translateX(-50%);overflow-y:auto;border-radius:22px;box-shadow:0 30px 80px rgba(0,0,0,.5)}
 .ibz-wrap img{display:block;width:480px}
 .ibz-wrap.photo img{width:auto;height:1040px;max-width:1500px}
+
+.phone .scr .mid{position:absolute;left:0;right:0;overflow:hidden}
+.phone .scr .fix-top,.phone .scr .fix-bot{position:absolute;left:0;right:0;background-size:100% auto;background-repeat:no-repeat;z-index:2}
+.phone .scr .fix-top{top:0;background-position:top center}
+.phone .scr .fix-bot{bottom:0;background-position:bottom center}

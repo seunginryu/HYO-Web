@@ -304,9 +304,19 @@ function phoneEl(p){
   const setImg = n => {
     scr.innerHTML = '';
     const im = el('img'); im.src = isrc(n); im.alt = '';
-    const h = ISIZE[n][1] * W / ISIZE[n][0];
-    if (h > H + 20 && !p.seq){ im.classList.add('tall'); im.style.setProperty('--dy', (H - h) + 'px'); im.style.setProperty('--dur', Math.max(10, (h - H) / 40) + 's'); }
-    scr.appendChild(im); w.dataset.img = n;
+    const sc = W / ISIZE[n][0], h = ISIZE[n][1] * sc;
+    if (h > H + 20 && !p.seq){
+      // tall screen: header (top 234px) and tab bar (bottom 166px) stay fixed, only the middle scrolls
+      const hd = 234 * sc, nv = 166 * sc, url = `url("${isrc(n)}")`;
+      const mid = el('div', 'mid'); mid.style.top = hd + 'px'; mid.style.bottom = nv + 'px';
+      im.classList.add('tall'); im.style.top = (-hd) + 'px'; im.style.minHeight = '0';
+      im.style.setProperty('--dy', (H - h) + 'px'); im.style.setProperty('--dur', Math.max(10, (h - H) / 40) + 's');
+      mid.appendChild(im); scr.appendChild(mid);
+      const top = el('div', 'fix-top'); top.style.height = hd + 'px'; top.style.backgroundImage = url;
+      const bot = el('div', 'fix-bot'); bot.style.height = nv + 'px'; bot.style.backgroundImage = url;
+      scr.append(top, bot);
+    } else scr.appendChild(im);
+    w.dataset.img = n;
   };
   if (p.seq){
     const cap = el('div', 'stepcap'); w.appendChild(cap);
